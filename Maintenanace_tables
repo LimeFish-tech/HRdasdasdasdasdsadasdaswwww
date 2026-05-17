@@ -1,0 +1,24 @@
+-- Таблица для хранения снимков кумулятивной статистики
+CREATE TABLE IF NOT EXISTS public.gp_maintenance_stats_log (
+    snapshot_ts timestamp default current_timestamp,
+    schema_name text,
+    table_name text,
+    n_tup_ins bigint,
+    n_tup_upd bigint,
+    n_tup_del bigint,
+    n_live_tup bigint,
+    n_dead_tup bigint
+) DISTRIBUTED BY (schema_name, table_name);
+
+-- Таблица очереди задач обслуживания
+CREATE TABLE IF NOT EXISTS public.gp_maintenance_queue (
+    id SERIAL PRIMARY KEY,
+    table_name text NOT NULL,
+    op_type text NOT NULL,            -- vacuum / analyze / vacuum_full_analyze
+    status text NOT NULL DEFAULT 'pending',
+    pid integer,
+    start_ts timestamptz,
+    end_ts timestamptz,
+    created_ts timestamptz DEFAULT now(),
+    error_message text
+);
